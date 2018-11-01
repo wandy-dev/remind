@@ -63,7 +63,7 @@ while getopts "mhdH" opt; do
       d) notify 'days' $@;;
       h) usage && exit 0;;
    esac
-done
+done 2>/dev/null
 
 if [[ $? != 0 ]]; then
   error "Couldn't queue job"
