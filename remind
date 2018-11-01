@@ -1,0 +1,70 @@
+#!/bin/bash
+
+# Show an error message and print usage
+error() {
+   echo -e "\033[0;31m$1\033[0m\n"
+   usage && exit 1
+}
+
+validate() {
+  unit=$1
+  num=$2
+  reminder=$3
+
+  units="-m-H-d"
+  if [[ "$unit" == '-h' ]]; then
+    return
+  fi
+  if [[ "${units/$unit}" = "$units" ]]; then
+    error 'Missing/Invalid unit flag'
+  fi
+  re='^[0-9]+$'
+  if ! [[ $num =~ $re ]] ; then
+    error "missing time arg"
+  fi
+  if [[ -z $reminder ]]; then
+    error "missing notification message"
+  fi
+}
+
+notify() {
+  unit=$1
+  num=$2
+  shift "$((optind))"
+  reminder=$@
+  echo "notify-send reminder '$reminder'" | at now + $num $unit
+}
+
+# Display help
+usage() {
+cat << EOF
+  USAGE:
+    remind: queue reminders for notify-send
+
+     remind [ -mHdh ] 1 Do the dishes
+
+  OPTIONS:
+
+     -h : show this text
+
+     -m : set reminder unit time to minutes
+     -H : set reminder unit time to hours
+     -d : set reminder unit time to days
+
+EOF
+}
+
+validate $@
+while getopts "mhdH" opt; do
+  shift "$((OPTIND-1))"
+   case "$opt" in
+      m) notify 'minutes' $@;;
+      H) notify 'hours' $@;;
+      d) notify 'days' $@;;
+      h) usage && exit 0;;
+   esac
+done
+
+if [[ $? != 0 ]]; then
+  error "Couldn't queue job"
+fi
