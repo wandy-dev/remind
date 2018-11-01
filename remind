@@ -30,7 +30,7 @@ validate() {
 notify() {
   unit=$1
   num=$2
-  shift "$((optind))"
+  shift "$((OPTIND))"
   reminder=$@
   echo "notify-send reminder '$reminder'" | at now + $num $unit
 }
